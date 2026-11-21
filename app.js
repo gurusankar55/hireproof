@@ -171,7 +171,8 @@ const VERDICT_TEXT = {
 function paintStats() {
   const c = state.cfg || {};
   $("st-companies").textContent = state.companies.filter((x) => x.status === "VERIFIED" || x.status === "EXITING").length;
-  $("st-jobs").textContent = state.jobs.filter((j) => j.status === "LIVE").length;
+  const flaggedIds = new Set(state.companies.filter((x) => x.status === "FLAGGED").map((x) => x.id));
+  $("st-jobs").textContent = state.jobs.filter((j) => j.status === "LIVE" && !flaggedIds.has(j.company_id)).length;
   $("st-checks").textContent = c.checks ?? "–";
   $("st-scams").textContent = c.scams ?? "–";
   $("rp-bond").textContent = "Bond: " + gen(c.report_bond) + " GEN";
@@ -210,7 +211,7 @@ function paintJobs() {
     return `<div class="item job ${flagged ? "flagged" : ""}">
       <div class="co">${flagged ? statusBadge("FLAGGED") : '<span class="badge b-green">✓ Verified</span>'} ${esc(j.company)} · ${esc(j.domain)}</div>
       <h4>${esc(j.title)}</h4>
-      <div class="tags">${j.location ? `<span class="tag">📍 ${esc(j.location)}</span>` : ""}${j.salary ? `<span class="tag">💰 ${esc(j.salary)}</span>` : ""}<span class="tag">No fees · checked by validators</span></div>
+      <div class="tags">${j.location ? `<span class="tag">📍 ${esc(j.location)}</span>` : ""}${j.salary ? `<span class="tag">💰 ${esc(j.salary)}</span>` : ""}${flagged ? '<span class="tag" style="background:#ffe4e6;color:#9f1239">⚠ Company flagged by Scam Court — do not apply</span>' : '<span class="tag">No fees · checked by validators</span>'}</div>
       <div class="actions"><a class="btn btn-ghost btn-sm" href="${esc(j.url)}" target="_blank" rel="noopener">Open official page ↗</a><span class="meta">${esc(j.id)} · ${ago(j.posted_at)}</span></div>
     </div>`;
   }).join("") : '<p class="empty">No verified jobs yet.</p>';
