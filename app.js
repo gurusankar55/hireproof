@@ -1,5 +1,5 @@
-import { createClient } from "https://esm.sh/genlayer-js";
-import { studionet } from "https://esm.sh/genlayer-js/chains";
+import { createClient } from "https://esm.sh/genlayer-js@2.2.0";
+import { studionet } from "https://esm.sh/genlayer-js@2.2.0/chains";
 import { CONFIG } from "./config.js";
 
 const $ = (id) => document.getElementById(id);
@@ -127,16 +127,35 @@ async function readJSON(fn, args = [], fallback = []) {
   try { const s = await read(fn, args); return s ? JSON.parse(s) : fallback; } catch (e) { console.warn(fn, e); return fallback; }
 }
 
+// Studio charges a fee on every write: quote it, then send it with the call.
+async function quoteFees(call) {
+  let q;
+  try {
+    q = await state.client.estimateTransactionFeesForWrite(call);
+  } catch (e) {
+    console.warn("fee simulation failed, using the default preset", e);
+    q = await state.client.estimateTransactionFees();
+  }
+  return { distribution: q.distribution, messageAllocations: q.messageAllocations, feeValue: q.feeValue };
+}
+
 async function write(fn, args, valueWei, label, btn) {
   if (!ready()) return false;
   if (!state.client) { openWalletModal(); return false; }
-  const t = toast(`<span class="spin"></span>${esc(label)} — confirm in your wallet…`, "", 0);
+  const t = toast(`<span class="spin"></span>${esc(label)} — calculating the network fee…`, "", 0);
   if (btn) btn.disabled = true;
   try {
     await ensureChain(state.provider);
-    const hash = await state.client.writeContract({ address: addr(), functionName: fn, args, value: valueWei || 0n });
+    const call = { address: addr(), functionName: fn, args, value: valueWei || 0n };
+    const fees = await quoteFees(call);
+    t.innerHTML = `<span class="spin"></span>${esc(label)} — confirm in your wallet…`;
+    const hash = await state.client.writeContract({ ...call, fees });
     t.innerHTML = `<span class="spin"></span>${esc(label)} — validators are working (can take 1–3 min)…`;
     const receipt = await state.readClient.waitForTransactionReceipt({ hash, status: "ACCEPTED", interval: 4000, retries: 120 });
+    const final = String(receipt?.statusName || receipt?.status_name || "").toUpperCase();
+    if (final && final !== "ACCEPTED" && final !== "FINALIZED") {
+      throw new Error("Validators did not agree (" + final + "). Nothing changed - please try again.");
+    }
     const lr = receipt?.consensus_data?.leader_receipt;
     const r0 = Array.isArray(lr) ? lr[0] : lr;
     if (r0 && String(r0.execution_result || "").toUpperCase() === "ERROR") {
