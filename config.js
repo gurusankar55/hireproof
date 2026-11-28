@@ -6,7 +6,7 @@
   },
   live: {
     label: "Live",
-    address: "0x51b42bfb929333FBa3b1009e6Fd8F85dDFaBdd48",
+    address: "0x9a60C8a31D2D163b60CB79ee3A14C50ec19996b5",
     note: "48-hour court windows, 2 GEN stake - real use",
   },
 };

@@ -3,7 +3,19 @@
 ## Live
 - Website: https://hireproof-two.vercel.app
 - Demo contract: https://explorer-studio.genlayer.com/address/0x0302E6cF29dB97178476dA91112e318D574c5102
-- Live contract: https://explorer-studio.genlayer.com/address/0x51b42bfb929333FBa3b1009e6Fd8F85dDFaBdd48
+- Live contract: https://explorer-studio.genlayer.com/address/0x9a60C8a31D2D163b60CB79ee3A14C50ec19996b5
+
+## Tested on GenLayer Studio (corrected demo contract)
+| Case | Steward point | Result |
+|---|---|---|
+| C1 verified, J1 posted | setup | J1 `LIVE` |
+| K1: typed address on the verified domain | sender authentication | `DOMAIN_MATCH_ONLY`, sender not authenticated |
+| R1: evidence page does not exist | failed retrieval | `INDETERMINATE` (`UNREADABLE`), full bond returned |
+| C1 exit finished, stake returned | closed company listings | company `CLOSED`, 0 live jobs |
+| R2: `demo/fee-notice.html` | quote validation and stored context | `OPEN`, validator-confirmed quote and source text stored |
+| R2 ruling after the window | ruling from stored context | `UPHELD` |
+
+Malformed model output and a page changed after intake cannot be forced on Studio; they are covered by `tests/test_hireproof.py`.
 
 Fake recruiters ask job seekers for "registration", "training", "laptop" or "ID card" fees.
 Millions of people lose money this way every year, and today nobody can quickly tell a real
