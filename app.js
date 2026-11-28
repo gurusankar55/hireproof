@@ -158,21 +158,21 @@ async function write(fn, args, valueWei, label, btn) {
 
 // ---------------------------------------------------------------- rendering
 const statusBadge = (s) => {
-  const m = { VERIFIED: "b-green", LIVE: "b-green", UPHELD: "b-red", FLAGGED: "b-red", SCAM: "b-red", REJECTED: "b-gray", DISMISSED: "b-gray", CLOSED: "b-gray", PENDING: "b-amber", OPEN: "b-amber", EXITING: "b-amber", SUSPICIOUS: "b-amber", NO_RED_FLAGS: "b-blue" };
+  const m = { VERIFIED: "b-green", DOMAIN_MATCH_ONLY: "b-blue", INDETERMINATE: "b-gray", NOT_CHECKED: "b-gray", LIVE: "b-green", UPHELD: "b-red", FLAGGED: "b-red", SCAM: "b-red", REJECTED: "b-gray", DISMISSED: "b-gray", CLOSED: "b-gray", PENDING: "b-amber", OPEN: "b-amber", EXITING: "b-amber", SUSPICIOUS: "b-amber", NO_RED_FLAGS: "b-blue" };
   return `<span class="badge ${m[s] || "b-gray"}">${esc(String(s).replace(/_/g, " "))}</span>`;
 };
 const VERDICT_TEXT = {
   SCAM: ["🚫 Scam", "Do not pay anything and do not share OTP, bank or ID details."],
   SUSPICIOUS: ["⚠️ Suspicious", "Confirm this job on the company's official website before you reply."],
-  VERIFIED: ["✅ Sender verified", "The sender's email belongs to a company that proved its domain on HireProof, and no scam signs were found."],
-  NO_RED_FLAGS: ["No red flags found", "The message looks normal, but the sender is not verified. Still never pay to get a job."],
+  DOMAIN_MATCH_ONLY: ["Domain match only — sender not authenticated", "The address you typed uses a verified company's domain and no scam signs were found. This does not prove who sent the message. Confirm on the company's official website."],
+  NO_RED_FLAGS: ["No red flags found", "No scam signs were found, but the sender is not authenticated. Never pay to get a job."],
+  INDETERMINATE: ["No verdict — please try again", "Validators could not analyse this message. This is not a safe result."],
 };
 
 function paintStats() {
   const c = state.cfg || {};
   $("st-companies").textContent = state.companies.filter((x) => x.status === "VERIFIED" || x.status === "EXITING").length;
-  const flaggedIds = new Set(state.companies.filter((x) => x.status === "FLAGGED").map((x) => x.id));
-  $("st-jobs").textContent = state.jobs.filter((j) => j.status === "LIVE" && !flaggedIds.has(j.company_id)).length;
+  $("st-jobs").textContent = state.jobs.filter((j) => j.status === "LIVE").length;
   $("st-checks").textContent = c.checks ?? "–";
   $("st-scams").textContent = c.scams ?? "–";
   $("rp-bond").textContent = "Bond: " + gen(c.report_bond) + " GEN";
@@ -206,12 +206,11 @@ function paintJobs() {
   const byId = Object.fromEntries(state.companies.map((c) => [c.id, c]));
   const list = state.jobs.filter((j) => j.status === "LIVE").filter((j) => !q || (j.title + j.company + j.location).toLowerCase().includes(q));
   $("jobList").innerHTML = list.length ? list.map((j) => {
-    const c = byId[j.company_id] || {};
-    const flagged = c.status === "FLAGGED";
-    return `<div class="item job ${flagged ? "flagged" : ""}">
-      <div class="co">${flagged ? statusBadge("FLAGGED") : '<span class="badge b-green">✓ Verified</span>'} ${esc(j.company)} · ${esc(j.domain)}</div>
+    const exiting = byId[j.company_id]?.status === "EXITING";
+    return `<div class="item job">
+      <div class="co"><span class="badge b-green">✓ Verified</span> ${esc(j.company)} · ${esc(j.domain)}</div>
       <h4>${esc(j.title)}</h4>
-      <div class="tags">${j.location ? `<span class="tag">📍 ${esc(j.location)}</span>` : ""}${j.salary ? `<span class="tag">💰 ${esc(j.salary)}</span>` : ""}${flagged ? '<span class="tag" style="background:#ffe4e6;color:#9f1239">⚠ Company flagged by Scam Court — do not apply</span>' : '<span class="tag">No fees · checked by validators</span>'}</div>
+      <div class="tags">${j.location ? `<span class="tag">📍 ${esc(j.location)}</span>` : ""}${j.salary ? `<span class="tag">💰 ${esc(j.salary)}</span>` : ""}<span class="tag">No fees · checked by validators</span>${exiting ? '<span class="tag">Company is leaving HireProof</span>' : ""}</div>
       <div class="actions"><a class="btn btn-ghost btn-sm" href="${esc(j.url)}" target="_blank" rel="noopener">Open official page ↗</a><span class="meta">${esc(j.id)} · ${ago(j.posted_at)}</span></div>
     </div>`;
   }).join("") : '<p class="empty">No verified jobs yet.</p>';
@@ -248,10 +247,12 @@ function paintReports() {
     if (r.status === "OPEN") {
       if (isCo && !r.response && left > 0) acts += `<textarea id="resp-${r.id}" rows="2" placeholder="Your response to the court"></textarea><button class="btn btn-primary btn-sm" data-act="respond" data-id="${r.id}">Send response</button>`;
       if (r.response || left <= 0) acts += `<button class="btn btn-danger btn-sm" data-act="resolve" data-id="${r.id}">Ask validators to rule</button>`;
+      if (now > Number(r.deadline) + 7 * Number(state.cfg?.window || Infinity)) acts += `<button class="btn btn-ghost btn-sm" data-act="expire" data-id="${r.id}">Close without decision (refund bond)</button>`;
     }
     return `<div class="item"><div class="item-h"><h4>${esc(r.id)} · ${esc(r.company)} <span class="meta">${esc(r.domain)}</span></h4>${statusBadge(r.status)}</div>
       ${r.quote ? `<div class="quote">“${esc(r.quote)}”</div>` : ""}
       ${r.details ? `<p class="meta" style="margin:4px 0">Reporter: ${esc(r.details)}</p>` : ""}
+      ${r.context ? `<details><summary class="meta">Stored source text confirmed by validators</summary><p class="meta">${esc(r.context)}</p></details>` : ""}
       ${r.response ? `<div class="resp"><b>Company:</b> ${esc(r.response)}</div>` : ""}
       ${r.ruling ? `<p style="margin:6px 0 0;font-size:14px"><b>Court:</b> ${esc(r.ruling)}</p>` : ""}
       <p class="meta" style="margin:6px 0 0"><a href="${esc(r.evidence_url)}" target="_blank" rel="noopener">evidence ↗</a> · bond ${gen(r.bond)} GEN · ${r.status === "OPEN" ? (left > 0 ? "response window ends in " + Math.ceil(left / 60) + " min" : "window over") : ago(r.resolved_at)}</p>
@@ -311,7 +312,7 @@ $("jobForm").addEventListener("submit", async (e) => {
   const ok = await write("post_job", [cid, $("jb-title").value.trim(), $("jb-loc").value.trim(), $("jb-sal").value.trim(), $("jb-url").value.trim()], 0n, "Validators checking your job page", e.submitter);
   if (ok) {
     const j = state.jobs[0];
-    if (j) toast(j.status === "LIVE" ? "Job is LIVE ✓" : "Job rejected: " + esc(j.note), j.status === "LIVE" ? "ok" : "err", 9000);
+    if (j) toast(j.status === "LIVE" ? "Job is LIVE ✓" : (j.status === "NOT_CHECKED" ? "Not checked: " : "Job rejected: ") + esc(j.note), j.status === "LIVE" ? "ok" : "err", 9000);
   }
 });
 
@@ -320,7 +321,7 @@ $("reportForm").addEventListener("submit", async (e) => {
   const cid = $("rp-company").value;
   if (!cid) return toast("Choose a verified company.", "err");
   const ok = await write("open_report", [cid, $("rp-url").value.trim(), $("rp-details").value.trim()], BigInt(state.cfg?.report_bond || "0"), "Validators checking the evidence", e.submitter);
-  if (ok && state.reports[0]) toast("Report " + esc(state.reports[0].id) + ": " + esc(state.reports[0].status), state.reports[0].status === "OPEN" ? "ok" : "err", 9000);
+  if (ok && state.reports[0]) toast("Report " + esc(state.reports[0].id) + ": " + esc(state.reports[0].status) + " — " + esc(state.reports[0].ruling), state.reports[0].status === "OPEN" ? "ok" : "err", 9000);
 });
 
 document.body.addEventListener("click", async (e) => {
@@ -340,6 +341,7 @@ document.body.addEventListener("click", async (e) => {
     if (txt.length < 10) return toast("Write a response (at least 10 characters).", "err");
     await write("respond_report", [id, txt], 0n, "Sending response", b);
   }
+  if (act === "expire") await write("expire_report", [id], 0n, "Closing case", b);
   if (act === "resolve") await write("resolve_report", [id], 0n, "Validators ruling", b);
 });
 

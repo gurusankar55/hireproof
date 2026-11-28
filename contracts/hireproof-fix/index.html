@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HireProof — Check a job offer before you pay</title>
+<meta name="description" content="HireProof stops fake job offers. Verified companies, validator-checked job posts, an AI offer checker and a Scam Court on GenLayer." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M32 4l24 9v17c0 15-10 26-24 30C18 56 8 45 8 30V13z' fill='%2310b981'/><path d='M21 32l8 8 15-16' stroke='white' stroke-width='6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#check" data-tab="check">
+      <svg viewBox="0 0 64 64" width="30" height="30"><path d="M32 4l24 9v17c0 15-10 26-24 30C18 56 8 45 8 30V13z" fill="#10b981"/><path d="M21 32l8 8 15-16" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>HireProof</span>
+    </a>
+    <nav class="tabs" id="tabs">
+      <button data-tab="check" class="on">Check an offer</button>
+      <button data-tab="jobs">Verified jobs</button>
+      <button data-tab="companies">Companies</button>
+      <button data-tab="court">Scam Court</button>
+      <button data-tab="employers">For employers</button>
+      <button data-tab="wallet">Wallet</button>
+    </nav>
+    <div class="top-r">
+      <div class="netswitch" id="netswitch">
+        <button data-net="demo">Demo</button><button data-net="live">Live</button>
+      </div>
+      <button class="btn btn-wallet" id="connectBtn">Connect wallet</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- CHECK -->
+  <section class="tab-page on" id="tab-check">
+    <div class="hero">
+      <div class="wrap hero-in">
+        <div class="hero-copy">
+          <p class="eyebrow">Powered by GenLayer validators</p>
+          <h1>Got a job offer?<br /><em>Check it before you pay a single rupee.</em></h1>
+          <p class="lead">Fake recruiters ask for "registration", "training" or "ID card" fees. HireProof checks the message with AI validators and compares the typed sender domain with companies that have proven they own their domain. It does not authenticate who sent a message.</p>
+          <div class="stats" id="stats">
+            <div><b id="st-companies">–</b><span>verified companies</span></div>
+            <div><b id="st-jobs">–</b><span>live verified jobs</span></div>
+            <div><b id="st-checks">–</b><span>offers checked</span></div>
+            <div><b id="st-scams">–</b><span>scams caught</span></div>
+          </div>
+        </div>
+        <form class="card check-card" id="checkForm">
+          <h2>Offer checker</h2>
+          <label>Company the message claims to be from <small>(website domain, optional)</small>
+            <input id="ck-domain" list="domainList" placeholder="e.g. infosys.com" autocomplete="off" />
+            <datalist id="domainList"></datalist>
+          </label>
+          <label>Sender email <small>(optional, domain compare only — not authenticated)</small>
+            <input id="ck-email" placeholder="hr@company.com" autocomplete="off" />
+          </label>
+          <label>Paste the offer message
+            <textarea id="ck-text" rows="7" placeholder="Congratulations! You are selected for Data Entry role. Pay Rs 1999 refundable training fee to confirm your seat..." required></textarea>
+          </label>
+          <p class="privacy">Remove your phone number, Aadhaar, PAN and home address before checking. The result is saved publicly on-chain.</p>
+          <button class="btn btn-primary btn-block" type="submit">Check with validators</button>
+        </form>
+      </div>
+    </div>
+    <div class="wrap">
+      <div id="checkResult"></div>
+      <div class="how">
+        <h3 class="sec-title">How HireProof protects job seekers</h3>
+        <div class="how-grid">
+          <div class="how-step"><span>1</span><h4>Companies prove their domain</h4><p>Validators read <code>/hireproof.txt</code> on the company's own website and the company locks a GEN stake.</p></div>
+          <div class="how-step"><span>2</span><h4>Every job is checked</h4><p>Validators open the official careers page. The job must really be there and must not ask candidates to pay.</p></div>
+          <div class="how-step"><span>3</span><h4>Offers get a verdict</h4><p>AI validators look for scam signs; the contract compares the typed email domain with the verified domain (a text match, not sender proof).</p></div>
+          <div class="how-step"><span>4</span><h4>Scam Court slashes cheaters</h4><p>If a verified company's site asks for fees, a reporter wins its stake after validators rule.</p></div>
+        </div>
+      </div>
+      <h3 class="sec-title">Recent checks <small>public scam wall</small></h3>
+      <div class="list" id="checkList"><p class="empty">Loading…</p></div>
+    </div>
+  </section>
+
+  <!-- JOBS -->
+  <section class="tab-page" id="tab-jobs">
+    <div class="wrap">
+      <div class="page-head"><h2>Verified jobs</h2><p>Every job below was found by validators on the company's own careers page. No candidate fee was found at the time of checking. Listings of closed or flagged companies are removed.</p></div>
+      <input class="search" id="jobSearch" placeholder="Search title, company or location…" />
+      <div class="grid" id="jobList"><p class="empty">Loading…</p></div>
+    </div>
+  </section>
+
+  <!-- COMPANIES -->
+  <section class="tab-page" id="tab-companies">
+    <div class="wrap">
+      <div class="page-head"><h2>Company registry</h2><p>Look up a domain before you trust a recruiter.</p></div>
+      <div class="lookup card">
+        <input id="lk-domain" placeholder="Type a company domain, e.g. tcs.com" />
+        <button class="btn btn-primary" id="lk-btn">Look up</button>
+        <div id="lk-out"></div>
+      </div>
+      <div class="list" id="companyList"><p class="empty">Loading…</p></div>
+    </div>
+  </section>
+
+  <!-- COURT -->
+  <section class="tab-page" id="tab-court">
+    <div class="wrap">
+      <div class="page-head"><h2>Scam Court</h2><p>Only evidence validators can read themselves — a page on the company's own domain — can slash a stake. Pasted screenshots never can.</p></div>
+      <div class="two">
+        <form class="card" id="reportForm">
+          <h3>Open a report</h3>
+          <label>Verified company
+            <select id="rp-company"></select>
+          </label>
+          <label>Evidence page on that company's domain
+            <input id="rp-url" placeholder="https://company.com/notice" />
+          </label>
+          <label>What happened
+            <textarea id="rp-details" rows="4" placeholder="Their careers page asks selected candidates to pay a training fee."></textarea>
+          </label>
+          <p class="hint" id="rp-bond">Bond: –</p>
+          <ul class="rules">
+            <li>Validators confirm the evidence first. If the page is readable and shows no fee demand, half your bond goes back and half goes to the company.</li>
+            <li>If the page cannot be read or validators cannot decide, your full bond is returned and nobody is penalised.</li>
+            <li>If confirmed, the company gets a response window. Then validators rule.</li>
+            <li>Upheld: company is FLAGGED and you receive its whole stake plus your bond.</li>
+            <li>Rejected after a confirmed intake: you get your full bond back.</li>
+          </ul>
+          <button class="btn btn-danger btn-block" type="submit">Open report</button>
+        </form>
+        <div>
+          <h3 class="sec-title">Cases</h3>
+          <div class="list" id="reportList"><p class="empty">Loading…</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EMPLOYERS -->
+  <section class="tab-page" id="tab-employers">
+    <div class="wrap">
+      <div class="page-head"><h2>For employers</h2><p>Get a verified badge so candidates can tell your real offers from fakes.</p></div>
+      <div class="steps">
+        <div class="card step">
+          <span class="num">1</span>
+          <h3>Add the proof file to your website</h3>
+          <p>Create <code>https://yourdomain/hireproof.txt</code> (or <code>/.well-known/hireproof.txt</code>) containing exactly:</p>
+          <pre id="proofLine">Connect your wallet to see your proof line</pre>
+          <button class="btn btn-ghost" id="copyProof" type="button">Copy</button>
+        </div>
+        <form class="card step" id="regForm">
+          <span class="num">2</span>
+          <h3>Register &amp; stake</h3>
+          <label>Company name<input id="rg-name" placeholder="Sankar Tech" /></label>
+          <label>Domain<input id="rg-domain" placeholder="sankartech.com" /></label>
+          <p class="hint" id="rg-stake">Stake: –</p>
+          <button class="btn btn-primary btn-block" type="submit">Register company</button>
+        </form>
+        <form class="card step" id="jobForm">
+          <span class="num">3</span>
+          <h3>Post a verified job</h3>
+          <label>Your company<select id="jb-company"></select></label>
+          <label>Job title<input id="jb-title" placeholder="Junior Web Developer" /></label>
+          <div class="row2">
+            <label>Location<input id="jb-loc" placeholder="Bangalore" /></label>
+            <label>Salary<input id="jb-sal" placeholder="₹4–5 LPA" /></label>
+          </div>
+          <label>Official job page (on your domain)<input id="jb-url" placeholder="https://sankartech.com/careers" /></label>
+          <button class="btn btn-primary btn-block" type="submit">Verify &amp; post job</button>
+        </form>
+      </div>
+      <h3 class="sec-title">My companies</h3>
+      <div class="list" id="myCompanies"><p class="empty">Connect your wallet.</p></div>
+    </div>
+  </section>
+
+  <!-- WALLET -->
+  <section class="tab-page" id="tab-wallet">
+    <div class="wrap narrow">
+      <div class="card wallet-card">
+        <h2>Your balance in HireProof</h2>
+        <p class="big" id="credit">–</p>
+        <p class="hint">Refunded stakes, returned bonds and Scam Court rewards collect here.</p>
+        <button class="btn btn-primary btn-block" id="withdrawBtn">Withdraw to my wallet</button>
+        <hr />
+        <p class="hint" id="contractInfo"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">HireProof · Intelligent Contract on GenLayer · <a href="https://github.com/gurusankar55/hireproof" target="_blank" rel="noopener">GitHub</a> · <a href="demo/careers.html" target="_blank">Demo careers page</a></div>
+</footer>
+
+<div class="modal" id="walletModal" hidden>
+  <div class="modal-box">
+    <h3>Choose a wallet</h3>
+    <div id="walletChoices"></div>
+    <button class="btn btn-ghost btn-block" id="closeModal">Cancel</button>
+  </div>
+</div>
+<div id="toasts"></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

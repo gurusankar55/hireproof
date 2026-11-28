@@ -42,7 +42,7 @@
         <div class="hero-copy">
           <p class="eyebrow">Powered by GenLayer validators</p>
           <h1>Got a job offer?<br /><em>Check it before you pay a single rupee.</em></h1>
-          <p class="lead">Fake recruiters ask for "registration", "training" or "ID card" fees. HireProof checks the message with AI validators and matches the sender against companies that have proven they own their domain.</p>
+          <p class="lead">Fake recruiters ask for "registration", "training" or "ID card" fees. HireProof checks the message with AI validators and compares the typed sender domain with companies that have proven they own their domain. It does not authenticate who sent a message.</p>
           <div class="stats" id="stats">
             <div><b id="st-companies">–</b><span>verified companies</span></div>
             <div><b id="st-jobs">–</b><span>live verified jobs</span></div>
@@ -56,7 +56,7 @@
             <input id="ck-domain" list="domainList" placeholder="e.g. infosys.com" autocomplete="off" />
             <datalist id="domainList"></datalist>
           </label>
-          <label>Sender email <small>(optional)</small>
+          <label>Sender email <small>(optional, domain compare only — not authenticated)</small>
             <input id="ck-email" placeholder="hr@company.com" autocomplete="off" />
           </label>
           <label>Paste the offer message
@@ -74,7 +74,7 @@
         <div class="how-grid">
           <div class="how-step"><span>1</span><h4>Companies prove their domain</h4><p>Validators read <code>/hireproof.txt</code> on the company's own website and the company locks a GEN stake.</p></div>
           <div class="how-step"><span>2</span><h4>Every job is checked</h4><p>Validators open the official careers page. The job must really be there and must not ask candidates to pay.</p></div>
-          <div class="how-step"><span>3</span><h4>Offers get a verdict</h4><p>AI validators look for scam signs; the contract matches the sender to the verified domain.</p></div>
+          <div class="how-step"><span>3</span><h4>Offers get a verdict</h4><p>AI validators look for scam signs; the contract compares the typed email domain with the verified domain (a text match, not sender proof).</p></div>
           <div class="how-step"><span>4</span><h4>Scam Court slashes cheaters</h4><p>If a verified company's site asks for fees, a reporter wins its stake after validators rule.</p></div>
         </div>
       </div>
@@ -86,7 +86,7 @@
   <!-- JOBS -->
   <section class="tab-page" id="tab-jobs">
     <div class="wrap">
-      <div class="page-head"><h2>Verified jobs</h2><p>Every job below was found by validators on the company's own careers page. None ask candidates for money.</p></div>
+      <div class="page-head"><h2>Verified jobs</h2><p>Every job below was found by validators on the company's own careers page. No candidate fee was found at the time of checking. Listings of closed or flagged companies are removed.</p></div>
       <input class="search" id="jobSearch" placeholder="Search title, company or location…" />
       <div class="grid" id="jobList"><p class="empty">Loading…</p></div>
     </div>
@@ -123,7 +123,8 @@
           </label>
           <p class="hint" id="rp-bond">Bond: –</p>
           <ul class="rules">
-            <li>Validators confirm the evidence first. If no fee demand is found, half your bond goes back and half goes to the company.</li>
+            <li>Validators confirm the evidence first. If the page is readable and shows no fee demand, half your bond goes back and half goes to the company.</li>
+            <li>If the page cannot be read or validators cannot decide, your full bond is returned and nobody is penalised.</li>
             <li>If confirmed, the company gets a response window. Then validators rule.</li>
             <li>Upheld: company is FLAGGED and you receive its whole stake plus your bond.</li>
             <li>Rejected after a confirmed intake: you get your full bond back.</li>

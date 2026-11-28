@@ -1,7 +1,7 @@
 ﻿export const CONFIG = {
   demo: {
     label: "Demo",
-    address: "0xa90D2800530a7723455d864Bfa935B5dBa90808E",
+    address: "0x0302E6cF29dB97178476dA91112e318D574c5102",
     note: "2-minute court windows, 1 GEN stake - for quick testing",
   },
   live: {
